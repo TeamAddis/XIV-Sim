@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'core.action',
     'core.buff',
     'core.resource',
+    'core.simulator',
 ]
 
 MIDDLEWARE = [

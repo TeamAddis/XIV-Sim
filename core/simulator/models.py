@@ -13,4 +13,4 @@ class Simulator:
         for action_loop in self.action_loops:
             potency = potency + action_loop.calculate_loop_potency()
 
-    
+        return potency

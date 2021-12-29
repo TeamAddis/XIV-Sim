@@ -1,5 +1,7 @@
 from django.db import models
 
+
+
 class ActionLoop:
     
     def __init__(self, id):
