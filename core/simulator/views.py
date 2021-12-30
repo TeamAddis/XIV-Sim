@@ -1,17 +1,37 @@
-from django.shortcuts import render
-from django.forms import formset_factory
-from django.forms.formsets import formset_factory
+from django.views.generic.edit import FormView
 
-from core.action.forms import ActionForm
+from core.action.forms import ActionForm, ActionFormSet
 from core.actionloop.models import ActionLoop
 from core.action.models import Action
-from core.job.forms import JobForm
+from core.job.views import JobListByGroup
 
 from .models import Simulator
 
+class SimulatorView(FormView):
+    template_name = 'simulator/index.html'
+    form_class = ActionFormSet
+    success_url = '/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tankJobs'] = JobListByGroup().get_queryset_by_job_group('tank')
+        context['healerJobs'] = JobListByGroup().get_queryset_by_job_group('healer')
+        context['dpsJobs'] = JobListByGroup().get_queryset_by_job_group('dps')
+        return context
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 def index(request):
     form_count = 5
-    context = {'jobform': JobForm()}
+    context = {
+        "tankJobs": JobListByGroup().get_queryset_by_job_group('tank'),
+        "healerJobs": JobListByGroup().get_queryset_by_job_group('healer'),
+        "dpsJobs": JobListByGroup().get_queryset_by_job_group('dps'),
+    }
 
     ActionFormSet = formset_factory(ActionForm, extra=form_count)
 

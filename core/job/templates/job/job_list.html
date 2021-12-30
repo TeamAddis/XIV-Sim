@@ -1,0 +1,5 @@
+{% for job in object_list %}
+    <li><a href="#" class="link-dark rounded">{{ job }}</a></li>
+{% empty %}
+    <li><a href="#" class="link-dark rounded">No Jobs to display.</a></li>
+{% endfor %}
