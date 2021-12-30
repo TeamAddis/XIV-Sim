@@ -1,6 +1,7 @@
 from django.views.generic.edit import FormView
+from django.shortcuts import render
 
-from core.action.forms import ActionForm, ActionFormSet
+from core.action.forms import ActionFormSet
 from core.actionloop.models import ActionLoop
 from core.action.models import Action
 from core.job.views import JobListByGroup
@@ -17,41 +18,19 @@ class SimulatorView(FormView):
         context['tankJobs'] = JobListByGroup().get_queryset_by_job_group('tank')
         context['healerJobs'] = JobListByGroup().get_queryset_by_job_group('healer')
         context['dpsJobs'] = JobListByGroup().get_queryset_by_job_group('dps')
+        context['total_potency'] = 0
         return context
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-def index(request):
-    form_count = 5
-    context = {
-        "tankJobs": JobListByGroup().get_queryset_by_job_group('tank'),
-        "healerJobs": JobListByGroup().get_queryset_by_job_group('healer'),
-        "dpsJobs": JobListByGroup().get_queryset_by_job_group('dps'),
-    }
-
-    ActionFormSet = formset_factory(ActionForm, extra=form_count)
-
-    if request.method == "POST":
-        formset = ActionFormSet(request.POST)
-        context["formset"] = formset
-
-        if formset.is_valid():
-            simulator = Simulator()
-            loop = ActionLoop(0)
-            for form in formset:
-                action = form.cleaned_data['action']
-                if isinstance(action, Action):
-                    loop.add_action(action)
-            simulator.add_action_loop(loop)
-            potency = simulator.calculate_total_potency()
-
-            context['total_potency'] = potency
-
-    elif request.method == "GET":
-        context["formset"] = ActionFormSet()
-    
-    return render(request, 'simulator/index.html', context=context)
+    def form_valid(self, form):
+        formset = form
+        simulator = Simulator()
+        loop = ActionLoop(0)
+        for form in formset:
+            action = form.cleaned_data['action']
+            if isinstance(action, Action):
+                loop.add_action(action)
+        simulator.add_action_loop(loop)
+        context = self.get_context_data(form=formset)
+        context['total_potency'] = simulator.calculate_total_potency()
+        
+        return render(self.request, self.template_name, context=context)
